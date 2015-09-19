@@ -1,5 +1,5 @@
-POS
----
+Posing
+------
 
 This is a bit of fun making a point of sale system. Currently written in python and sqlite3
 
