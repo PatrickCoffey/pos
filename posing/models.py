@@ -31,7 +31,6 @@ def refresh_models():
 
 
 def add_test_data():
-    
     admin = Role(name="Admin")
     employee = Role(name="Employee")
     session.add_all([admin, employee])
@@ -89,8 +88,6 @@ def add_test_data():
     session.commit()
 
     
-
-
 #=================================
 # User models
 
@@ -113,13 +110,6 @@ class Role(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
-    
-
-# class UserRoleAssoc(Base):
-    # __tablename__ = "user_role_assoc"
-    
-    # user_id = Column(Integer, ForeignKey("users.id"))
-    # role_id = Column(Integer, ForeignKey("roles.id"))
         
 
 #=================================
@@ -184,14 +174,6 @@ class Order(Base):
     #sale_id = Column(Integer, ForeignKey("sales.id"))
     items = relationship("Item", secondary=order_item_assoc)
 
-
-# class OrderItems(Base):
-    # __tablename__ = "order_items"
-    
-    # order_id = Column(Integer, ForeignKey("orders.id"), primary_key=True)
-    # item_id = Column(Integer, ForeignKey("items.id"), primary_key=True)
-    # order = relationship("Order")
-    # quantity = Column(Integer)
     
 if __name__ == "__main__":
     refresh_models()
