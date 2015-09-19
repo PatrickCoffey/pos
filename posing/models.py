@@ -32,28 +32,32 @@ def refresh_models():
 
 def add_test_data():
     
-    user1 = User(name="derp1", fullname="one, derp", password="bleep")
-    user2 = User(name="derp2", fullname="two, derp", password="blerp")
+    admin = Role(name="Admin")
+    employee = Role(name="Employee")
+    session.add_all([admin, employee])
+    
+    user1 = User(name="derp1", fullname="one, derp", password="bleep", role=[admin])
+    user2 = User(name="derp2", fullname="two, derp", password="blerp", role=[employee])
     session.add_all([user1, user2])
     
-    tinned = StockCatagory("Tinned Consumable")
-    herb = StockCatagory("Dried Herb")
-    sauce = StockCatagory("Sauce")
-    fresh = StockCatagory("Fresh Produce")
-    meat = StockCatagory("Meat/Poultry")
+    tinned = StockCatagory(name="Tinned Consumable")
+    herb = StockCatagory(name="Dried Herb")
+    sauce = StockCatagory(name="Sauce")
+    fresh = StockCatagory(name="Fresh Produce")
+    meat = StockCatagory(name="Meat/Poultry")
     session.add_all([tinned, herb, sauce, fresh, meat])
 
-    tin_tomato = Stock("Tinned Tomatoes", tinned)
-    tin_peach = Stock("Tinned Peach", tinned)
-    oregano = Stock("Oregano", herb)
-    parsley = Stock("Parsley", herb)
-    mixed_herb = Stock("Mixed Herbs", herb)
-    sauce_tom = Stock("Tomato Sauce", sauce)
-    sauce_mayo = Stock("Mayonaise", sauce)
-    cabbage = Stock("Cabbage", fresh)
-    spinach = Stock("Spinach", fresh)
-    tomato = Stock("Tomato", fresh)
-    steak = Stock("Steak", meat)
+    tin_tomato = Stock(name="Tinned Tomatoes", catagory=tinned)
+    tin_peach = Stock(name="Tinned Peach", catagory=tinned)
+    oregano = Stock(name="Oregano", catagory=herb)
+    parsley = Stock(name="Parsley", catagory=herb)
+    mixed_herb = Stock(name="Mixed Herbs", catagory=herb)
+    sauce_tom = Stock(name="Tomato Sauce", catagory=sauce)
+    sauce_mayo = Stock(name="Mayonaise", catagory=sauce)
+    cabbage = Stock(name="Cabbage", catagory=fresh)
+    spinach = Stock(name="Spinach", catagory=fresh)
+    tomato = Stock(name="Tomato", catagory=fresh)
+    steak = Stock(name="Steak", catagory=meat)
     session.add_all([tin_tomato,
                      tin_peach,
                      oregano,
@@ -66,15 +70,20 @@ def add_test_data():
                      tomato,
                      steak])
     
-    steak_veg = Item("Steak and Veg", 11.50, [steak, spinach, tomato])
-    session.add(steak_veg)
+    steak_veg = Item(name="Steak and Veg", unit_price=11.50, stock=[steak, 
+                                                               spinach, 
+                                                               tomato])
+    steak_napoli = Item(name="Steak Napoli", unit_price=13, stock=[steak,
+                                                                   tin_tomato,
+                                                                   oregano,
+                                                                   parsley])
+    session.add_all([steak_veg, steak_napoli])
     
-    order1 = Order("Billy Jean", [steak_veg])
+    order1 = Order(customer="Billy Jean", items=[steak_veg, 
+                                                 steak_napoli])
     session.add(order1)
     
-    sale1 = Sale()
-    sale1.operator = user1  
-    sale1.order = order1
+    sale1 = Sale(order=order1, operator=user2)
     session.add(sale1)
     
     session.commit()
@@ -97,7 +106,6 @@ class User(Base):
     fullname = Column(String)
     password = Column(String)
     role = relationship("Role", secondary=user_role_assoc, backref='users')
-        
 
 class Role(Base):
     __tablename__ = 'roles'
@@ -106,9 +114,6 @@ class Role(Base):
     name = Column(String)
     description = Column(String)
     
-    def __init__(self, name, desc=""):
-        self.name = name
-        self.description = desc
 
 # class UserRoleAssoc(Base):
     # __tablename__ = "user_role_assoc"
@@ -130,11 +135,8 @@ class Stock(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
-    catagory = ForeignKey("stock_catagories.id")
-    
-    def __init__(self, name, catagory, desc=""):
-        self.name = name
-        self.description = desc
+    catagory_id = Column(Integer, ForeignKey("stock_catagories.id"))
+    catagory = relationship("StockCatagory")
     
     
 class StockCatagory(Base):
@@ -143,10 +145,6 @@ class StockCatagory(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
-    
-    def __init__(self, name, desc=""):
-        self.name = name
-        self.description = desc
         
     
 class Item(Base):
@@ -158,55 +156,42 @@ class Item(Base):
     unit_price = Column(Float)
     quantity = Column(Integer)
     stock = relationship("Stock", secondary=item_stock_assoc)
-    
-    def __init__(self, name, price, stock, quantity=1, desc=""):
-        self.name = name
-        self.unit_price = price
-        self.stock = stock
-        self.quantity = quantity
-        self.description = desc
-        
 
 
 #=================================
 # orders and sales    
 
-# order_item_assoc = Table("order_items", Base.metadata,
-                         # Column("order_id", Integer, ForeignKey("orders.id")),
-                         # Column("item_id", Integer, ForeignKey("items.id")))
+order_item_assoc = Table("order_items", Base.metadata,
+                         Column("order_id", Integer, ForeignKey("orders.id")),
+                         Column("item_id", Integer, ForeignKey("items.id")))
 
 class Sale(Base):
     __tablename__ = "sales"
     
     id = Column(Integer, primary_key=True)
     date = Date()
-    order = ForeignKey("Order.id")
-    operator = ForeignKey("User.id")
+    order_id = Column(Integer, ForeignKey("orders.id"))
+    order = relationship("Order")
+    operator_id = Column(Integer, ForeignKey("users.id"))
+    operator = relationship("User")
     
-    def __init__(self):
-        self.date = datetime.datetime.now()
-        
     
 class Order(Base):
     __tablename__ = "orders"
     
     id = Column(Integer, primary_key=True)
     customer = Column(String)
-    sale_id = ForeignKey("sales.id")
-    items = relationship("OrderItems")
-    
-    def __init__(self, customer, items):
-        self.customer = customer
-        self.items = items
+    #sale_id = Column(Integer, ForeignKey("sales.id"))
+    items = relationship("Item", secondary=order_item_assoc)
 
 
-class OrderItems(Base):
-    __tablename__ = "order_items"
+# class OrderItems(Base):
+    # __tablename__ = "order_items"
     
-    order_id = Column(Integer, ForeignKey("orders.id"), primary_key=True)
-    item_id = Column(Integer, ForeignKey("items.id"), primary_key=True)
-    order = relationship("Order")
-    quantity = Column(Integer)
+    # order_id = Column(Integer, ForeignKey("orders.id"), primary_key=True)
+    # item_id = Column(Integer, ForeignKey("items.id"), primary_key=True)
+    # order = relationship("Order")
+    # quantity = Column(Integer)
     
 if __name__ == "__main__":
     refresh_models()
