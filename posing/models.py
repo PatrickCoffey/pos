@@ -8,7 +8,8 @@ Posing - db.py
 This is the database models for the ORM
 """
 
-from sqlalchemy import ForeignKey, Table, Column, Integer, Float, String, Date
+from sqlalchemy import ForeignKey, Table, Column
+from sqlalchemy import Integer, Float, String, DateTime
 from sqlalchemy.orm import relationship, backref, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -219,7 +220,7 @@ class Sale(Base):
     __tablename__ = "sales"
     
     id = Column(Integer, primary_key=True)
-    date = Date()
+    date = Column(DateTime, default=datetime.datetime.now())
     order_id = Column(Integer, ForeignKey("orders.id"))
     order = relationship("Order")
     operator_id = Column(Integer, ForeignKey("users.id"))
