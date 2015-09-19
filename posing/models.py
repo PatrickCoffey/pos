@@ -35,8 +35,14 @@ def add_test_data():
     employee = Role(name="Employee")
     session.add_all([admin, employee])
     
-    user1 = User(name="derp1", fullname="one, derp", password="bleep", role=[admin])
-    user2 = User(name="derp2", fullname="two, derp", password="blerp", role=[employee])
+    user1 = User(name="derp1", 
+                 fullname="one, derp", 
+                 password="bleep", 
+                 role=[admin])
+    user2 = User(name="derp2", 
+                 fullname="two, derp",
+                 password="blerp", 
+                 role=[employee])
     session.add_all([user1, user2])
     
     tinned = StockCatagory(name="Tinned Consumable")
@@ -69,17 +75,22 @@ def add_test_data():
                      tomato,
                      steak])
     
-    steak_veg = Item(name="Steak and Veg", unit_price=11.50, stock=[steak, 
-                                                               spinach, 
-                                                               tomato])
-    steak_napoli = Item(name="Steak Napoli", unit_price=13, stock=[steak,
-                                                                   tin_tomato,
-                                                                   oregano,
-                                                                   parsley])
+    steak_veg = Item(name="Steak and Veg", 
+                     unit_price=11.50, 
+                     stock=[steak, 
+                            spinach, 
+                            tomato])
+    steak_napoli = Item(name="Steak Napoli", 
+                        unit_price=13, 
+                        stock=[steak,
+                               tin_tomato,
+                               oregano,
+                               parsley])
     session.add_all([steak_veg, steak_napoli])
     
-    order1 = Order(customer="Billy Jean", items=[steak_veg, 
-                                                 steak_napoli])
+    order1 = Order(customer="Billy Jean", 
+                   items=[steak_veg, 
+                          steak_napoli])
     session.add(order1)
     
     sale1 = Sale(order=order1, operator=user2)
@@ -91,9 +102,14 @@ def add_test_data():
 #=================================
 # User models
 
-user_role_assoc = Table("user_role", Base.metadata,
-                        Column("user_id", Integer, ForeignKey("users.id")),
-                        Column("role_id", Integer, ForeignKey("roles.id")))
+user_role_assoc = Table("user_role", 
+                        Base.metadata,
+                        Column("user_id", 
+                               Integer, 
+                               ForeignKey("users.id")),
+                        Column("role_id", 
+                               Integer, 
+                               ForeignKey("roles.id")))
 
 class User(Base):
     __tablename__ = 'users'
@@ -115,9 +131,14 @@ class Role(Base):
 #=================================
 # stock models
     
-item_stock_assoc = Table("item_stock", Base.metadata,
-                         Column("stock_id", Integer, ForeignKey("stock.id")),
-                         Column("item_id", Integer, ForeignKey("items.id")))    
+item_stock_assoc = Table("item_stock", 
+                         Base.metadata,
+                         Column("stock_id", 
+                                Integer, 
+                                ForeignKey("stock.id")),
+                         Column("item_id", 
+                                Integer, 
+                                ForeignKey("items.id")))    
 
 class Stock(Base):
     __tablename__ = "stock"
@@ -151,9 +172,14 @@ class Item(Base):
 #=================================
 # orders and sales    
 
-order_item_assoc = Table("order_items", Base.metadata,
-                         Column("order_id", Integer, ForeignKey("orders.id")),
-                         Column("item_id", Integer, ForeignKey("items.id")))
+order_item_assoc = Table("order_items", 
+                         Base.metadata,
+                         Column("order_id", 
+                                Integer, 
+                                ForeignKey("orders.id")),
+                         Column("item_id", 
+                                Integer, 
+                                ForeignKey("items.id")))
 
 class Sale(Base):
     __tablename__ = "sales"
