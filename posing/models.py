@@ -33,8 +33,8 @@ def refresh_models():
 def add_test_data():
     admin = Role(name="Admin")
     employee = Role(name="Employee")
+    # add roles
     session.add_all([admin, employee])
-    
     user1 = User(name="derp1", 
                  fullname="one, derp", 
                  password="bleep", 
@@ -43,26 +43,27 @@ def add_test_data():
                  fullname="two, derp",
                  password="blerp", 
                  role=[employee])
+    #add users
     session.add_all([user1, user2])
-    
-    tinned = StockCatagory(name="Tinned Consumable")
-    herb = StockCatagory(name="Dried Herb")
-    sauce = StockCatagory(name="Sauce")
-    fresh = StockCatagory(name="Fresh Produce")
-    meat = StockCatagory(name="Meat/Poultry")
+    tinned = StockCategory(name="Tinned Consumable")
+    herb = StockCategory(name="Dried Herb")
+    sauce = StockCategory(name="Sauce")
+    fresh = StockCategory(name="Fresh Produce")
+    meat = StockCategory(name="Meat/Poultry")
+    # add stock catagories
     session.add_all([tinned, herb, sauce, fresh, meat])
-
-    tin_tomato = Stock(name="Tinned Tomatoes", catagory=tinned)
-    tin_peach = Stock(name="Tinned Peach", catagory=tinned)
-    oregano = Stock(name="Oregano", catagory=herb)
-    parsley = Stock(name="Parsley", catagory=herb)
-    mixed_herb = Stock(name="Mixed Herbs", catagory=herb)
-    sauce_tom = Stock(name="Tomato Sauce", catagory=sauce)
-    sauce_mayo = Stock(name="Mayonaise", catagory=sauce)
-    cabbage = Stock(name="Cabbage", catagory=fresh)
-    spinach = Stock(name="Spinach", catagory=fresh)
-    tomato = Stock(name="Tomato", catagory=fresh)
-    steak = Stock(name="Steak", catagory=meat)
+    tin_tomato = Stock(name="Tinned Tomatoes", category=tinned)
+    tin_peach = Stock(name="Tinned Peach", category=tinned)
+    oregano = Stock(name="Oregano", category=herb)
+    parsley = Stock(name="Parsley", category=herb)
+    mixed_herb = Stock(name="Mixed Herbs", category=herb)
+    sauce_tom = Stock(name="Tomato Sauce", category=sauce)
+    sauce_mayo = Stock(name="Mayonaise", category=sauce)
+    cabbage = Stock(name="Cabbage", category=fresh)
+    spinach = Stock(name="Spinach", category=fresh)
+    tomato = Stock(name="Tomato", category=fresh)
+    steak = Stock(name="Steak", category=meat)
+    # add stock
     session.add_all([tin_tomato,
                      tin_peach,
                      oregano,
@@ -74,7 +75,6 @@ def add_test_data():
                      spinach,
                      tomato,
                      steak])
-    
     steak_veg = Item(name="Steak and Veg", 
                      unit_price=11.50, 
                      stock=[steak, 
@@ -86,19 +86,37 @@ def add_test_data():
                                tin_tomato,
                                oregano,
                                parsley])
+    # add items
     session.add_all([steak_veg, steak_napoli])
-    
     order1 = Order(customer="Billy Jean", 
                    items=[steak_veg, 
                           steak_napoli])
+    # add order
     session.add(order1)
-    
     sale1 = Sale(order=order1, operator=user2)
+    # add sale
     session.add(sale1)
-    
+    # commit to db
     session.commit()
-
     
+    for row in session.query(User).all():
+        print(row)
+    
+    for row in session.query(Role).all():
+        print(row)
+
+    for row in session.query(Stock).all():
+            print(row)    
+
+    for row in session.query(Item).all():
+            print(row)
+
+    for row in session.query(Order).all():
+            print(row)
+            
+    for row in session.query(Sale).all():
+            print(row)            
+            
 #=================================
 # User models
 
@@ -120,13 +138,19 @@ class User(Base):
     password = Column(String)
     role = relationship("Role", secondary=user_role_assoc, backref='users')
 
+    def __repr__(self):
+        return "<User(name='%s', fullname='%s')>" % (self.name,
+                                                     self.fullname)
+
 class Role(Base):
     __tablename__ = 'roles'
     
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
-        
+    
+    def __repr__(self):
+        return "<Role(name='%s')>" % self.name
 
 #=================================
 # stock models
@@ -146,17 +170,24 @@ class Stock(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
-    catagory_id = Column(Integer, ForeignKey("stock_catagories.id"))
-    catagory = relationship("StockCatagory")
+    category_id = Column(Integer, ForeignKey("stock_categories.id"))
+    category = relationship("StockCategory")
+    
+    def __repr__(self):
+        return "<Stock(name='%s', category=%s)>" % (self.name, 
+                                                    self.category)
     
     
-class StockCatagory(Base):
-    __tablename__ = "stock_catagories"
+class StockCategory(Base):
+    __tablename__ = "stock_categories"
     
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
-        
+    
+    def __repr__(self):
+        return "<StockCategory(name='%s')>" % self.name
+    
     
 class Item(Base):
     __tablename__ = "items"
@@ -167,6 +198,9 @@ class Item(Base):
     unit_price = Column(Float)
     quantity = Column(Integer)
     stock = relationship("Stock", secondary=item_stock_assoc)
+    
+    def __repr__(self):
+        return "<Item(name='%s')>" % self.name
 
 
 #=================================
@@ -191,6 +225,10 @@ class Sale(Base):
     operator_id = Column(Integer, ForeignKey("users.id"))
     operator = relationship("User")
     
+    def __repr__(self):
+        return "<Sale(date='%s', order=%s)>" % (self.date, 
+                                                self.order)
+    
     
 class Order(Base):
     __tablename__ = "orders"
@@ -199,6 +237,9 @@ class Order(Base):
     customer = Column(String)
     #sale_id = Column(Integer, ForeignKey("sales.id"))
     items = relationship("Item", secondary=order_item_assoc)
+    
+    def __repr__(self):
+        return "<Order(customer='%s')>" % self.customer
 
     
 if __name__ == "__main__":
