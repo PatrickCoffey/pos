@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-Posing - db.py
---------------
+Posing - models.py
+------------------
 
 This is the database models for the ORM
 """
@@ -21,7 +21,7 @@ Config = config.parse_config()
 Base = declarative_base()
 
 from sqlalchemy import create_engine
-engine = create_engine(Config["general"]["db_path"], echo=True)
+engine = create_engine(Config["general"]["db_path"].strip("'"), echo=True)
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -246,4 +246,6 @@ class Order(Base):
 if __name__ == "__main__":
     refresh_models()
     add_test_data()
+    sales = session.query(Sale).all()
+    print(sales)
     print(Base)

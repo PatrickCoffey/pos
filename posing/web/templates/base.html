@@ -1,0 +1,24 @@
+{% extends 'index.html' %}
+{% block  header %}
+<h1>This is the header</h1>
+{% endblock %}
+{% block  body_left %}
+<ul>
+    <li><a href=#>derp1</a></li>
+    <li><a href=#>derp2</a></li>
+    <li><a href=#>derp3</a></li>
+</ul>
+{% endblock %}
+{% block  body %}
+<ul>
+    {% for sale in sales %}
+    <li>sale: {{ sale }}
+    {% endfor %}
+</ul>
+{% endblock %}
+{% block  body_right %}
+<p>this is the right column</p>
+{% endblock %}
+{% block footer %}
+<p> this is the footer </p>
+{% endblock %}

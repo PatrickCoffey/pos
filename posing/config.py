@@ -9,11 +9,15 @@ This is the database models for the ORM
 """
 
 import ConfigParser
-
+import os
 
 def_config = "config.ini"
+current_dir = os.path.dirname(__file__)
 
-def_config_vals = {"general": {"db_path": "sqlite:///posing.db"}}
+def_config_vals = {"general": {"db_path": "sqlite:///posing.db"},
+                   '/': {'tools.staticdir.root': current_dir + '/web'},
+                   '/css': {'tools.staticdir.on': True,
+                            'tools.staticdir.dir': 'templates/css'}}
 
 def parse_config(conf_file=def_config):
     config_parser = load_config(conf_file)
